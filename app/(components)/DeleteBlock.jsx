@@ -11,4 +11,3 @@ const DeleteBlock = () => {
 };
 
 export default DeleteBlock;
-ç;

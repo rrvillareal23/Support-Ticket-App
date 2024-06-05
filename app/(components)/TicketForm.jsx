@@ -37,8 +37,8 @@ const TicketForm = () => {
 
       const data = await res.json();
       console.log("Response Data:", data);
-      router.refresh();
       router.push("/");
+      router.refresh();
     } catch (error) {
       console.error("Submission error:", error);
     }

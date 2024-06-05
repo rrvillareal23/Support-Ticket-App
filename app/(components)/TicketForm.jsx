@@ -4,24 +4,51 @@ import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 
 const TicketForm = () => {
+  const router = useRouter();
   const handleChange = (e) => {
     const value = e.target.value;
     const name = e.target.name;
 
-    setFormData((prevState) => ({
-      ...prevState,
+    setFormData((preState) => ({
+      ...preState,
       [name]: value,
     }));
   };
 
-  const handleSubmit = () => {
-    console.log("submitted");
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await fetch("/api/Tickets", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ formData }),
+      });
+
+      // Log full response for debugging
+      console.log("Full Response:", res);
+
+      if (!res.ok) {
+        const errorData = await res.text();
+        console.error("Error Data:", errorData);
+        throw new Error("Failed to create Ticket");
+      }
+
+      const data = await res.json();
+      console.log("Response Data:", data);
+      router.refresh();
+      router.push("/");
+    } catch (error) {
+      console.error("Submission error:", error);
+    }
   };
 
   const startingTicketData = {
     title: "",
     description: "",
     priority: 1,
+    progress: 0,
     status: "not started",
     category: "Hardware Problem",
   };
@@ -29,11 +56,11 @@ const TicketForm = () => {
   const [formData, setFormData] = useState(startingTicketData);
 
   return (
-    <div className="flex justify-center ">
+    <div className="flex justify-center">
       <form
-        className="flex flex-col gap-3 w-1/2"
+        onSubmit={handleSubmit}
         method="post"
-        onSubmit={handleSubmit}>
+        className="flex flex-col gap-3 w-1/2">
         <h3>Create Your Ticket</h3>
         <label>Title</label>
         <input
@@ -41,7 +68,7 @@ const TicketForm = () => {
           name="title"
           type="text"
           onChange={handleChange}
-          required={true}
+          required
           value={formData.title}
         />
 
@@ -50,9 +77,9 @@ const TicketForm = () => {
           id="description"
           name="description"
           onChange={handleChange}
-          required={true}
+          required
           value={formData.description}
-          rows={5}
+          rows="5"
         />
 
         <label>Category</label>
@@ -60,9 +87,9 @@ const TicketForm = () => {
           name="category"
           value={formData.category}
           onChange={handleChange}>
-          <option value={"Hardware Problem"}>Hardware Problem</option>
-          <option value={"Software Problem"}>Software Problem</option>
-          <option value={"Project"}>Project</option>
+          <option value="Hardware Problem">Hardware Problem</option>
+          <option value="Software Problem">Software Problem</option>
+          <option value="Project">Project</option>
         </select>
 
         <label>Priority</label>
@@ -126,6 +153,7 @@ const TicketForm = () => {
           value={formData.progress}
           min="0"
           max="100"
+          onChange={handleChange}
         />
 
         <label>Status</label>
